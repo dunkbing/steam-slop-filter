@@ -2,7 +2,7 @@
   "manifest_version": 3,
   "name": "Steam Slop Filter",
   "version": "0.1.0",
-  "description": "Vote on and filter AI-slop games on Steam (Next Fest, search, sale pages). Uses community votes and Steam's own AI content disclosures.",
+  "description": "Vote on and hide AI-slop games on Steam (Next Fest, search, sales) using community votes and Steam AI disclosures.",
   "icons": { "128": "icons/icon128.png" },
   "permissions": ["storage"],
   "host_permissions": ["https://store.steampowered.com/*"],
