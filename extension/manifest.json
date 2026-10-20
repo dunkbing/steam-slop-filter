@@ -3,7 +3,9 @@
   "name": "Steam Slop Filter",
   "version": "0.1.0",
   "description": "Vote on and hide AI-slop games on Steam (Next Fest, search, sales) using community votes and Steam AI disclosures.",
-  "icons": { "128": "icons/icon128.png" },
+  "icons": {
+    "128": "icons/icon128.png"
+  },
   "permissions": ["storage"],
   "host_permissions": ["https://store.steampowered.com/*"],
   "content_scripts": [
@@ -18,8 +20,20 @@
     "default_title": "Steam Slop Filter",
     "default_popup": "src/options.html"
   },
-  "options_ui": { "page": "src/options.html", "open_in_tab": false },
+  "options_ui": {
+    "page": "src/options.html",
+    "open_in_tab": false
+  },
   "browser_specific_settings": {
-    "gecko": { "id": "steam-slop-filter@example.org", "strict_min_version": "121.0" }
+    "gecko": {
+      "id": "steam-slop-filter@dunkbing",
+      "strict_min_version": "140.0",
+      "data_collection_permissions": {
+        "required": ["websiteActivity"]
+      }
+    },
+    "gecko_android": {
+      "strict_min_version": "142.0"
+    }
   }
 }

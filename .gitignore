@@ -2,3 +2,4 @@ node_modules/
 .wrangler/
 .env
 .DS_Store
+extension.zip
