@@ -11,7 +11,7 @@ CREATE INDEX IF NOT EXISTS votes_appid_ip ON votes (appid, ip_hash);
 
 CREATE TABLE IF NOT EXISTS disclosures (
   appid      INTEGER PRIMARY KEY,
-  ai         INTEGER NOT NULL,
+  ai         INTEGER NOT NULL, -- 1 = disclosed, 0 = none, -1 = page unreadable (retried hourly)
   text       TEXT    NOT NULL,
   checked_at INTEGER NOT NULL
 );

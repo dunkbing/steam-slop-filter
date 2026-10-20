@@ -6,3 +6,14 @@ compatibility_date = "2026-09-01"
 binding = "DB"
 database_name = "steam-slop-votes"
 database_id = "6e72e47f-3e79-47a0-9f70-a6d0670f0c71"
+
+# Per-IP request limits (per Cloudflare location, approximate).
+[[ratelimits]]
+name = "READ_LIMITER"
+namespace_id = "1001"
+simple = { limit = 100, period = 60 }
+
+[[ratelimits]]
+name = "VOTE_LIMITER"
+namespace_id = "1002"
+simple = { limit = 20, period = 60 }

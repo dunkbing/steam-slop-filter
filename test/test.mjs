@@ -2,7 +2,7 @@ import { test } from "node:test";
 import assert from "node:assert";
 import fs from "node:fs";
 import { createRequire } from "node:module";
-import { parseDisclosure } from "../server/src/index.js";
+import { parseDisclosure } from "../api/src/index.js";
 
 const SSF = createRequire(import.meta.url)("../extension/src/shared.js");
 const fixture = (f) => fs.readFileSync(new URL(`fixtures/${f}`, import.meta.url), "utf8");

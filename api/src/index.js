@@ -3,6 +3,8 @@
 
 const MAX_APPIDS = 10;
 const DISCLOSURE_TTL = 7 * 24 * 60 * 60 * 1000;
+// Unreadable pages (age gate, region lock, Steam rate limit) are retried at most this often.
+const RETRY_TTL = 60 * 60 * 1000;
 const VOTERS_PER_IP_PER_APP = 3;
 
 const CORS = {
@@ -15,6 +17,11 @@ export default {
   async fetch(request, env) {
     if (request.method === "OPTIONS") return new Response(null, { headers: CORS });
     const url = new URL(request.url);
+    const limiter = request.method === "POST" ? env.VOTE_LIMITER : env.READ_LIMITER;
+    const ip = request.headers.get("CF-Connecting-IP") || "unknown";
+    if (limiter && !(await limiter.limit({ key: ip })).success) {
+      return json({ error: "too many requests" }, 429);
+    }
     try {
       if (request.method === "GET" && url.pathname === "/games") return await games(url, env);
       if (request.method === "POST" && url.pathname === "/vote") return await vote(request, env);
@@ -48,13 +55,15 @@ async function games(url, env) {
   await Promise.all(
     ids.map(async (id) => {
       let d = discRows.get(id);
-      if (!d || Date.now() - d.checked_at > DISCLOSURE_TTL) d = (await fetchDisclosure(id, env)) || d;
+      if (!d || Date.now() - d.checked_at > (d.ai < 0 ? RETRY_TTL : DISCLOSURE_TTL)) {
+        d = (await fetchDisclosure(id, env)) || d;
+      }
       const v = voteRows.get(id);
       out[id] = {
         slop: v ? v.slop : 0,
         legit: v ? v.legit : 0,
-        ai: d ? !!d.ai : null,
-        aiText: d && d.ai ? d.text : "",
+        ai: d && d.ai >= 0 ? d.ai === 1 : null,
+        aiText: d && d.ai === 1 ? d.text : "",
       };
     })
   );
@@ -66,9 +75,8 @@ async function fetchDisclosure(appid, env) {
     const res = await fetch(`https://store.steampowered.com/app/${appid}/?l=english`, {
       headers: { Cookie: "birthtime=0; lastagecheckage=1-0-1990; wants_mature_content=1" },
     });
-    if (!res.ok) return null;
-    const d = parseDisclosure(await res.text());
-    if (!d) return null;
+    const d = res.ok ? parseDisclosure(await res.text()) : null;
+    if (!d) return await markUnreadable(appid, env);
     const row = { ai: d.ai ? 1 : 0, text: d.text.slice(0, 1000), checked_at: Date.now() };
     await env.DB.prepare(
       `INSERT INTO disclosures (appid, ai, text, checked_at) VALUES (?, ?, ?, ?)
@@ -80,8 +88,21 @@ async function fetchDisclosure(appid, env) {
     return row;
   } catch (err) {
     console.error("steam fetch failed", appid, err);
-    return null;
+    return await markUnreadable(appid, env).catch(() => null);
   }
+}
+
+// New appid: store ai = -1 (unknown). Known appid: keep serving the stale result, retry in RETRY_TTL.
+async function markUnreadable(appid, env) {
+  const now = Date.now();
+  await env.DB.prepare(
+    `INSERT INTO disclosures (appid, ai, text, checked_at) VALUES (?1, -1, '', ?2)
+     ON CONFLICT (appid) DO UPDATE
+       SET checked_at = CASE WHEN ai < 0 THEN ?2 ELSE ?3 END`
+  )
+    .bind(appid, now, now - DISCLOSURE_TTL + RETRY_TTL)
+    .run();
+  return null;
 }
 
 // null = not a readable store page (age gate, error, region redirect).
