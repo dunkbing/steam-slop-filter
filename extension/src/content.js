@@ -29,7 +29,10 @@
     applyModeClass();
     if (currentApp) injectAppPanel();
     scan();
-    new MutationObserver(scheduleScan).observe(document.body, { childList: true, subtree: true });
+    // Ignore our own badge updates, or every scan's render() would schedule the next scan.
+    new MutationObserver((records) => {
+      if (records.some((r) => !r.target.closest(".ssf-badge, .ssf-panel, .ssf-toggle"))) scheduleScan();
+    }).observe(document.body, { childList: true, subtree: true });
     chrome.storage.onChanged.addListener(onStorageChanged);
   }
 
@@ -84,7 +87,7 @@
 
   function decorate(host, appid) {
     host.dataset.ssfHost = appid;
-    if (getComputedStyle(host).position === "static") host.classList.add("ssf-host-rel");
+    if (getComputedStyle(host).position === "static") host.style.position = "relative";
     host.appendChild(makeBadge(appid));
     if (!hosts.has(appid)) hosts.set(appid, new Set());
     hosts.get(appid).add(host);
@@ -128,7 +131,7 @@
     const v = verdict(settings, mine, game);
 
     for (const host of hosts.get(appid) || []) {
-      host.classList.toggle("ssf-slop", v.slop);
+      host.toggleAttribute("data-ssf-slop", v.slop);
       const badge = host.querySelector(":scope > .ssf-badge");
       if (!badge) continue;
       badge.classList.toggle("ssf-flagged", v.slop);
@@ -158,7 +161,7 @@
       if (toggle) toggle.hidden = true;
       return;
     }
-    const n = document.querySelectorAll("[data-ssf-host].ssf-slop").length;
+    const n = document.querySelectorAll("[data-ssf-slop]").length;
     if (!toggle) {
       toggle = document.createElement("button");
       toggle.className = "ssf-toggle";

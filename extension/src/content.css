@@ -1,5 +1,3 @@
-.ssf-host-rel { position: relative; }
-
 .ssf-badge {
   position: absolute;
   top: 4px;
@@ -37,10 +35,10 @@
 }
 .ssf-badge.ssf-flagged { background: rgba(120, 30, 20, 0.92); }
 
-.ssf-mode-dim .ssf-slop { opacity: 0.18 !important; filter: grayscale(1) !important; transition: opacity 0.15s; }
-.ssf-mode-dim .ssf-slop:hover { opacity: 0.7 !important; }
-.ssf-mode-hide .ssf-slop { display: none !important; }
-.ssf-show-hidden.ssf-mode-hide .ssf-slop { display: revert !important; opacity: 0.35 !important; outline: 2px dashed #a33b2b; }
+.ssf-mode-dim [data-ssf-slop] { opacity: 0.18 !important; filter: grayscale(1) !important; transition: opacity 0.15s; }
+.ssf-mode-dim [data-ssf-slop]:hover { opacity: 0.7 !important; }
+.ssf-mode-hide [data-ssf-slop] { display: none !important; }
+.ssf-show-hidden.ssf-mode-hide [data-ssf-slop] { display: revert !important; opacity: 0.35 !important; outline: 2px dashed #a33b2b; }
 
 .ssf-toggle {
   position: fixed;
