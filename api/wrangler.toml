@@ -1,0 +1,8 @@
+name = "steam-slop-votes"
+main = "src/index.js"
+compatibility_date = "2026-09-01"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "steam-slop-votes"
+database_id = "6e72e47f-3e79-47a0-9f70-a6d0670f0c71"
